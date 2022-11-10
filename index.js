@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
-
+const jwt = require("jsonwebtoken");
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -22,6 +22,20 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+function verfiyJWT(req, res, next) {
+  const authHeader = req.headers.authoraization;
+  if (!authHeader) {
+    return res.status(401).send({ message: "UnAuthorized access" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (error, decoded) {
+    if (error) {
+      return res.status(401).send({ message: "UnAuthoraized" });
+    }
+    req.decoded = decoded;
+    next();
+  });
+}
 async function run() {
   try {
     const serviceCollection = client
@@ -49,6 +63,12 @@ async function run() {
       res.send(service);
     });
 
+    app.post("/services", async (req, res) => {
+      const order = req.body;
+      const result = await serviceCollection.insertOne(order);
+      res.send(result);
+    });
+
     //reviews api
 
     //review inserOne
@@ -58,6 +78,13 @@ async function run() {
       res.send(result);
     });
 
+    //get one reviews
+    app.get("/reviews/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const service = await serviceCollection.findOne(query);
+      res.send(service);
+    });
     //get all reviews
     app.get("/reviews", async (req, res) => {
       let query = {};
@@ -71,7 +98,38 @@ async function run() {
       res.send(reviews);
     });
 
+    //
+
+    // //Update Review in UI after deleting One
+    // app.patch("/reviews/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   // console.log(id)
+    //   const query = { service: id };
+    //   const result = await reviewCollection.updateOne(query, {
+    //     $set: req.body,
+    //   });
+    //   if (result.matchedCount) {
+    //     res.send(result);
+    //   }
+    // });
+    app.patch("/reviews/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { service_id: id };
+      const result = await reviewsCollection.updateOne(query, {
+        $set: req.body,
+      });
+      if (result.matchedCount) {
+        res.send(result);
+      }
+    });
+
     //delete review
+    app.delete("/reviews/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await reviewsCollection.deleteOne(query);
+      res.send(result);
+    });
   } finally {
   }
 }
