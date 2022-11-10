@@ -27,7 +27,9 @@ async function run() {
     const serviceCollection = client
       .db("uspDentalSolution")
       .collection("services");
-
+    const reviewsCollection = client
+      .db("uspDentalSolution")
+      .collection("reviews");
     app.get("/homeservices", async (req, res) => {
       const query = {};
       const cursor = serviceCollection.find(query);
@@ -46,6 +48,30 @@ async function run() {
       const service = await serviceCollection.findOne(query);
       res.send(service);
     });
+
+    //reviews api
+
+    //review inserOne
+    app.post("/reviews", async (req, res) => {
+      const order = req.body;
+      const result = await reviewsCollection.insertOne(order);
+      res.send(result);
+    });
+
+    //get all reviews
+    app.get("/reviews", async (req, res) => {
+      let query = {};
+      if (req.query.email) {
+        query = {
+          email: req.query.email,
+        };
+      }
+      const cursor = reviewsCollection.find(query);
+      const reviews = await cursor.toArray();
+      res.send(reviews);
+    });
+
+    //delete review
   } finally {
   }
 }
