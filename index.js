@@ -10,6 +10,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+//oparations
 app.get("/", (req, res) => {
   res.send("Running usp dental solution server");
 });
@@ -22,6 +23,7 @@ const client = new MongoClient(uri, {
   serverApi: ServerApiVersion.v1,
 });
 
+//jwt function
 function verfiyJWT(req, res, next) {
   const authHeader = req.headers.authoraization;
   if (!authHeader) {
@@ -44,18 +46,26 @@ async function run() {
     const reviewsCollection = client
       .db("uspDentalSolution")
       .collection("reviews");
+
+    //get for home service
     app.get("/homeservices", async (req, res) => {
       const query = {};
       const cursor = serviceCollection.find(query);
       const services = await cursor.limit(3).toArray();
       res.send(services);
     });
+
+    //get service all data
+
     app.get("/services", async (req, res) => {
       const query = {};
       const cursor = serviceCollection.find(query);
       const services = await cursor.toArray();
       res.send(services);
     });
+
+    //get service one data
+
     app.get("/services/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -63,6 +73,7 @@ async function run() {
       res.send(service);
     });
 
+    //post service
     app.post("/services", async (req, res) => {
       const service = req.body;
       const result = await serviceCollection.insertOne(service);
@@ -98,7 +109,7 @@ async function run() {
       res.send(reviews);
     });
 
-    //update
+    //update reviews
     app.patch("/reviews/:id", async (req, res) => {
       const id = req.params.id;
       const query = { service_id: id };
@@ -121,6 +132,8 @@ async function run() {
   }
 }
 run().catch((err) => console.log(err));
+
+//app listening
 app.listen(port, () => {
   console.log("Running on port", port);
 });
