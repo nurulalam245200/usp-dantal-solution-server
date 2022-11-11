@@ -64,8 +64,8 @@ async function run() {
     });
 
     app.post("/services", async (req, res) => {
-      const order = req.body;
-      const result = await serviceCollection.insertOne(order);
+      const service = req.body;
+      const result = await serviceCollection.insertOne(service);
       res.send(result);
     });
 
@@ -73,8 +73,8 @@ async function run() {
 
     //review inserOne
     app.post("/reviews", async (req, res) => {
-      const order = req.body;
-      const result = await reviewsCollection.insertOne(order);
+      const review = req.body;
+      const result = await reviewsCollection.insertOne(review);
       res.send(result);
     });
 
@@ -98,20 +98,7 @@ async function run() {
       res.send(reviews);
     });
 
-    //
-
-    // //Update Review in UI after deleting One
-    // app.patch("/reviews/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   // console.log(id)
-    //   const query = { service: id };
-    //   const result = await reviewCollection.updateOne(query, {
-    //     $set: req.body,
-    //   });
-    //   if (result.matchedCount) {
-    //     res.send(result);
-    //   }
-    // });
+    //update
     app.patch("/reviews/:id", async (req, res) => {
       const id = req.params.id;
       const query = { service_id: id };
